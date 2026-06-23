@@ -327,17 +327,29 @@ function CTA() {
       </p>
       {/* Both buttons now go to #booking */}
       <div style={{ display:'flex',gap:'14px',justifyContent:'center',flexWrap:'wrap',position:'relative',zIndex:2 }}>
-        <a href="#booking" className="btn-gold"><span>Reserve Your Visit</span></a>
-        <a href="#booking" className="btn-outline">Book Online</a>
+        <button
+          className="btn-gold"
+          onClick={() => document.getElementById('booking')?.scrollIntoView({ behavior:'smooth' })}
+        ><span>Reserve Your Visit</span></button>
+        <button
+          className="btn-outline"
+          onClick={() => document.getElementById('booking')?.scrollIntoView({ behavior:'smooth' })}
+        >Book Online</button>
       </div>
       <div className="cta-details" style={{ position:'relative',zIndex:2 }}>
         {[
-          { l:'Address',  v:'24 Mayfair Street, London W1K 2AA' },
-          { l:'Tue – Fri',v:'9:00am – 8:00pm' },
-          { l:'Weekend',  v:'Sat 9–7 · Sun 10–5' },
-          { l:'Phone',    v:'+44 (0)20 7123 4567' },
+          { l:'Address',   v:'24 Mayfair Street, London W1K 2AA', href: null },
+          { l:'Telephone', v:'+44 (0)20 7123 4567',               href: 'tel:+442071234567' },
+          { l:'Weekdays',  v:'Tue – Fri: 9:00am – 8:00pm',        href: null },
+          { l:'Weekend',   v:'Sat 9:00–7:00 · Sun 10:00–5:00',    href: null },
         ].map(d => (
-          <div key={d.l} className="cta-detail"><div className="l">{d.l}</div><div className="v">{d.v}</div></div>
+          <div key={d.l} className="cta-detail">
+            <div className="l">{d.l}</div>
+            {d.href
+              ? <a href={d.href} className="v" style={{ color:'var(--cream-mid)',fontStyle:'italic',textDecoration:'none' }}>{d.v}</a>
+              : <div className="v">{d.v}</div>
+            }
+          </div>
         ))}
       </div>
     </section>
@@ -402,7 +414,20 @@ export default function Home() {
       const lenis = new Lenis({ duration:1.4, easing:t=>Math.min(1,1.001-Math.pow(2,-10*t)), smoothWheel:true });
       const raf = time => { lenis.raf(time); requestAnimationFrame(raf); };
       requestAnimationFrame(raf);
-      return () => lenis.destroy();
+
+      // Make all anchor links (#section) work with Lenis
+      const handleClick = (e) => {
+        const anchor = e.target.closest("a[href^='#']");
+        if (!anchor) return;
+        const id = anchor.getAttribute("href").slice(1);
+        const target = document.getElementById(id);
+        if (target) {
+          e.preventDefault();
+          lenis.scrollTo(target, { offset: -80, duration: 1.4 });
+        }
+      };
+      document.addEventListener("click", handleClick);
+      return () => { lenis.destroy(); document.removeEventListener("click", handleClick); };
     }).catch(() => {});
   }, []);
   return (
